@@ -26,7 +26,7 @@ export default function CampaignShareLink({ path, title, caption }: { path: stri
   return (
     <div className="campaign-short-link">
       <span>{url.replace(/^https?:\/\//, "")}</span>
-      <button onClick={share} aria-label="Share campaign link">
+      <button type="button" onClick={share} aria-label="Share campaign link">
         {copied ? <Check size={17} /> : <Share2 size={17} />}
       </button>
     </div>

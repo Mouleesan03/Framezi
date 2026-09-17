@@ -290,18 +290,18 @@ export default function CampaignApp({
     if (!blob.current) return;
     try {
       const file = createShareFile(blob.current, filename("png"));
-      const url = window.location.origin + "/" + c.slug;
+      const url = `${window.location.origin}${c.short_code ? `/c/${c.short_code}` : `/${c.slug}`}`;
       if (navigator.share) {
         if (navigator.canShare?.({ files: [file] }))
-          await navigator.share({ files: [file], text: c.share_text });
-        else await navigator.share({ url, text: c.share_text });
+          await navigator.share({ files: [file], title: c.title, text: `${c.share_text}\n${url}` });
+        else await navigator.share({ title: c.title, url, text: c.share_text });
         if (!counted.current.has("share")) {
           event("share", selected, generation.current);
           counted.current.add("share");
         }
       } else {
-        await navigator.clipboard.writeText(url);
-        notify("Sharing is unavailable here. Campaign link copied!");
+        await navigator.clipboard.writeText(`${c.share_text}\n${url}`);
+        notify("Campaign caption and short link copied!");
       }
     } catch (e) {
       if ((e as Error).name !== "AbortError")
