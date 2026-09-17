@@ -18,6 +18,7 @@ const campaigns = [
     date: "06–08 October 2026",
     frames: "3 frames",
     frame: "/frames/uoj-41st-convocation.png",
+    person: "/sample-sri-lankan-graduate.png",
     className: "graduation",
   },
   {
@@ -27,7 +28,28 @@ const campaigns = [
     date: "October 4, 2026",
     frames: "1 frame",
     frame: "/frames/world-animal-day-2026.png",
+    person: "/sample-animal-advocate.png",
     className: "animal-day",
+  },
+  {
+    href: "/world-teachers-day-2026",
+    title: "World Teachers’ Day 2026",
+    organization: "Global Education Community",
+    date: "October 5, 2026",
+    frames: "1 frame",
+    frame: "/frames/world-teachers-day-2026.png",
+    person: "/sample-teacher.png",
+    className: "teachers-day",
+  },
+  {
+    href: "/world-mental-health-day-2026",
+    title: "World Mental Health Day 2026",
+    organization: "Global Wellbeing Community",
+    date: "October 10, 2026",
+    frames: "1 frame",
+    frame: "/frames/world-mental-health-day-2026.png",
+    person: "/sample-mental-health-supporter.png",
+    className: "mental-health-day",
   },
 ];
 
@@ -61,7 +83,7 @@ export default function Home() {
         <div className="home-hero-gallery" aria-label="Framezi campaign examples">
           <div className="simple-demo-card hero-card-main">
             <div className="simple-demo-photo">
-              <img src="/sample-sri-lankan-graduate.png" alt="Supporter using the World Animal Day campaign frame" />
+              <img src="/sample-animal-advocate.png" alt="Animal advocate using the World Animal Day campaign frame" />
               <img src="/frames/world-animal-day-2026.png" alt="" />
             </div>
             <div className="simple-demo-label"><Check size={17} /> World Animal Day · October 4</div>
@@ -86,7 +108,7 @@ export default function Home() {
           {campaigns.map((campaign) => (
             <Link href={campaign.href} className="home-campaign-card" key={campaign.href}>
               <div className={`home-campaign-art ${campaign.className}`}>
-                <img src="/sample-sri-lankan-graduate.png" alt="" />
+                <img src={campaign.person} alt="" />
                 <img src={campaign.frame} alt={`${campaign.title} frame`} />
                 <span>{campaign.frames}</span>
               </div>
@@ -128,12 +150,13 @@ export default function Home() {
           <div className="simple-footer-brand">
             <Logo />
             <p>Simple, private visual campaigns for moments and causes worth sharing.</p>
-            <span>An <a href="https://infonits.com" target="_blank" rel="noreferrer">Infonits</a> product</span>
           </div>
           <div className="simple-footer-column">
             <strong>Campaigns</strong>
             <Link href="/uoj-convocation-2026">Jaffna Convocation</Link>
             <Link href="/world-animal-day-2026">World Animal Day</Link>
+            <Link href="/world-teachers-day-2026">World Teachers’ Day</Link>
+            <Link href="/world-mental-health-day-2026">Mental Health Day</Link>
           </div>
           <div className="simple-footer-column">
             <strong>Framezi</strong>
@@ -143,10 +166,10 @@ export default function Home() {
           </div>
           <div className="simple-footer-column">
             <strong>Company</strong>
-            <a href="https://infonits.com" target="_blank" rel="noreferrer">Infonits</a>
+            <a href="https://infonits.io" target="_blank" rel="noreferrer">Infonits</a>
           </div>
         </div>
-        <div className="simple-footer-bottom"><span>© 2026 Infonits. All rights reserved.</span><span>Made in Sri Lanka</span></div>
+        <div className="simple-footer-bottom"><span>© 2026 <a href="https://infonits.io" target="_blank" rel="noreferrer">Infonits</a>. All rights reserved.</span><span>Made in Sri Lanka</span></div>
       </footer>
     </main>
   );

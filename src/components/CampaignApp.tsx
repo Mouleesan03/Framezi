@@ -71,6 +71,12 @@ export default function CampaignApp({
   const eventQueue = useRef(Promise.resolve());
   const viewed = useRef(false);
   const active = frames.find((f) => f.id === selected);
+  const placeholderPhoto = {
+    "uoj-convocation-2026": "/sample-sri-lankan-graduate.png",
+    "world-animal-day-2026": "/sample-animal-advocate.png",
+    "world-teachers-day-2026": "/sample-teacher.png",
+    "world-mental-health-day-2026": "/sample-mental-health-supporter.png",
+  }[c.slug] || "/sample-sri-lankan-graduate.png";
   const notify = (message: string) => {
     setToast(message);
   };
@@ -646,8 +652,8 @@ export default function CampaignApp({
                   />
                 ) : (
                   <img
-                    src="/sample-sri-lankan-graduate.png"
-                    alt="Sri Lankan woman graduate showing the frame layout"
+                    src={placeholderPhoto}
+                    alt={`Example participant showing the ${c.name} frame`}
                   />
                 )}
                 {active && (
