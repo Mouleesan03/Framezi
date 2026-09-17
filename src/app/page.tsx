@@ -8,7 +8,7 @@ import {
   Share2,
   Sparkles,
 } from "lucide-react";
-import { Logo } from "@/components/Brand";
+import { Footer, Logo } from "@/components/Brand";
 
 const campaigns = [
   {
@@ -145,32 +145,7 @@ export default function Home() {
         </div>
       </section>
 
-      <footer className="simple-footer">
-        <div className="simple-footer-main">
-          <div className="simple-footer-brand">
-            <Logo />
-            <p>Simple, private visual campaigns for moments and causes worth sharing.</p>
-          </div>
-          <div className="simple-footer-column">
-            <strong>Campaigns</strong>
-            <Link href="/uoj-convocation-2026">Jaffna Convocation</Link>
-            <Link href="/world-animal-day-2026">World Animal Day</Link>
-            <Link href="/world-teachers-day-2026">World Teachers’ Day</Link>
-            <Link href="/world-mental-health-day-2026">Mental Health Day</Link>
-          </div>
-          <div className="simple-footer-column">
-            <strong>Framezi</strong>
-            <a href="#how-it-works">How it works</a>
-            <Link href="/privacy">Privacy</Link>
-            <Link href="/terms">Terms</Link>
-          </div>
-          <div className="simple-footer-column">
-            <strong>Company</strong>
-            <a href="https://infonits.io" target="_blank" rel="noreferrer">Infonits</a>
-          </div>
-        </div>
-        <div className="simple-footer-bottom"><span>© 2026 <a href="https://infonits.io" target="_blank" rel="noreferrer">Infonits</a>. All rights reserved.</span><span>Made in Sri Lanka</span></div>
-      </footer>
+      <Footer />
     </main>
   );
 }

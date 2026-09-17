@@ -1,11 +1,10 @@
 import { notFound } from "next/navigation";
 import { BookOpen, CalendarDays, GraduationCap, HeartHandshake, Images, MapPin, PawPrint, Users } from "lucide-react";
-import Link from "next/link";
 import { getCampaign, getCampaignUsage } from "@/lib/data";
 import { configured, adminClient } from "@/lib/supabase/server";
 import { isOpen } from "@/lib/demo";
 import CampaignApp from "@/components/CampaignApp";
-import { Logo } from "@/components/Brand";
+import { Footer, Logo } from "@/components/Brand";
 import CampaignShareLink from "@/components/CampaignShareLink";
 import type { Metadata } from "next";
 
@@ -72,12 +71,7 @@ export default async function CampaignPage({ params, searchParams }: {
           <CampaignShareLink path={shortPath} title={c.title} caption={c.share_text} />
         </section>
       </main>
-      <footer className="simple-campaign-foot">
-        <Logo />
-        <p>Visual campaigns made simple. Your photo stays on your device.</p>
-        <div><Link href="/">Campaigns</Link><Link href="/privacy">Privacy</Link><Link href="/terms">Terms</Link></div>
-        <small>© 2026 <a href="https://infonits.io" target="_blank" rel="noreferrer">Infonits</a>. All rights reserved.</small>
-      </footer>
+      <Footer />
     </div>
   );
 }

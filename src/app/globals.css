@@ -2850,3 +2850,64 @@ td small {
   .simple-home .simple-footer-column:last-child { display: none; }
   .simple-home .simple-footer-bottom { align-items: flex-start; flex-direction: column; gap: 6px; }
 }
+
+/* One public footer across home, campaigns, and legal pages */
+.public-footer {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 56px max(24px, calc((100% - 1120px) / 2)) 22px;
+  display: block;
+  color: #a9b1bd;
+  background: #101824;
+  border-top: 1px solid #ffffff14;
+  font-size: 12px;
+}
+.public-footer-main {
+  display: grid;
+  grid-template-columns: 1.8fr repeat(3, 1fr);
+  gap: 54px;
+  padding-bottom: 44px;
+}
+.public-footer-brand { min-width: 0; }
+.public-footer-brand .logo { color: #fff; }
+.public-footer-brand .logo-mark { background: #f6d84a; color: #14243a; }
+.public-footer-brand .logo-dot { color: #f6d84a; }
+.public-footer-brand p { max-width: 360px; margin-top: 14px; color: #969ca7; line-height: 1.6; }
+.public-footer-column { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; }
+.public-footer-column strong { margin-bottom: 3px; color: #fff; font-size: 12px; }
+.public-footer a { color: #a9b1bd; font-weight: 550; }
+.public-footer a:hover { color: #f6d84a; }
+.public-footer-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #ffffff14;
+  color: #77818f;
+}
+.public-footer-bottom a { color: #f6d84a; font-weight: 700; }
+
+/* Campaign participation stats stay together on small screens */
+.simple-campaign-title .event-meta {
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: nowrap;
+  gap: 18px;
+  white-space: nowrap;
+}
+
+@media (max-width: 900px) {
+  .public-footer-main { grid-template-columns: 1.6fr repeat(3, 1fr); gap: 26px; }
+}
+
+@media (max-width: 700px) {
+  .simple-campaign-title .event-meta { justify-content: flex-start; gap: 12px; font-size: 10px; }
+  .public-footer { padding: 42px 20px 22px; }
+  .public-footer-main { grid-template-columns: 1fr 1fr; gap: 34px 24px; }
+  .public-footer-brand { grid-column: 1 / -1; }
+  .public-footer-column:last-child { display: none; }
+  .public-footer-bottom { align-items: flex-start; flex-direction: column; gap: 6px; }
+}
