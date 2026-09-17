@@ -5,14 +5,14 @@ import Link from "next/link";
 import {
   ShieldCheck,
   Upload,
-  RotateCcw,
+  RotateCw,
+  RefreshCw,
+  Move,
   Check,
   ArrowRight,
   Download,
   Share2,
   Image as ImageIcon,
-  ZoomIn,
-  ZoomOut,
   X,
 } from "lucide-react";
 import type { Campaign } from "@/lib/types";
@@ -363,17 +363,9 @@ export default function CampaignApp({
         </div>
       )}
       {photo && step === 2 && (
-        <div className="mobile-editor-tools">
-          <p>Drag to move · Pinch to zoom</p>
-          <label>
-            <ZoomOut size={18} />
-            <input aria-label="Photo size" type="range" min={1} max={3} step={0.01} value={zoom} onChange={(e) => setZoom(Number(e.target.value))} />
-            <ZoomIn size={18} />
-          </label>
-          <div>
-            <button className="icon-button" aria-label="Rotate photo" onClick={() => setRotation((value) => (value - 90) % 360)}><RotateCcw size={19} /></button>
-            <button className="button secondary small" onClick={() => { setCrop({ x: 0, y: 0 }); setZoom(1); setRotation(0); }}>Reset</button>
-          </div>
+        <div className="editor-gesture-hint">
+          <Move size={16} aria-hidden="true" />
+          <span>Drag to move · Pinch with two fingers to zoom</span>
         </div>
       )}
       <div className="generator-layout editing">
@@ -447,37 +439,37 @@ export default function CampaignApp({
               <h2>{photo ? "Make it fit" : "Choose your photo"}</h2>
               <p className="muted" style={{ marginBottom: 20 }}>
                 {photo
-                  ? "Drag to move. Use the slider to zoom."
+                  ? "Drag to move. Pinch with two fingers to zoom."
                   : "Pick a clear portrait from your phone."}
               </p>
               {!needsDetails && <label className="check-field simple-consent">
                 <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} />
                 <span>I agree to the <Link href="/privacy" target="_blank">privacy policy</Link>. My photo stays on this device.</span>
               </label>}
-              <label
-                className={`upload-zone ${!consent ? "disabled" : ""}`}
-                onDragOver={(e) => e.preventDefault()}
-                onDrop={(e) => {
-                  e.preventDefault();
-                  if (consent) void choosePhoto(e.dataTransfer.files[0]);
-                }}
-              >
-                <Upload size={27} />
-                <strong>
-                  {photo ? "Change photo" : "Choose photo"}
-                </strong>
-                <small>JPG, PNG or WEBP · up to 15 MB</small>
-                <input
-                  type="file"
-                  disabled={!consent || busy}
-                  accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
-                  onChange={(e) => {
-                    void choosePhoto(e.target.files?.[0]);
-                    e.target.value = "";
+              {!photo && (
+                <label
+                  className={`upload-zone ${!consent ? "disabled" : ""}`}
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    if (consent) void choosePhoto(e.dataTransfer.files[0]);
                   }}
-                  aria-label="Upload Your Photo"
-                />
-              </label>
+                >
+                  <Upload size={27} />
+                  <strong>Choose photo</strong>
+                  <small>JPG, PNG or WEBP · up to 15 MB</small>
+                  <input
+                    type="file"
+                    disabled={!consent || busy}
+                    accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
+                    onChange={(e) => {
+                      void choosePhoto(e.target.files?.[0]);
+                      e.target.value = "";
+                    }}
+                    aria-label="Upload Your Photo"
+                  />
+                </label>
+              )}
               <p className="offline-note">Your photo is never uploaded.</p>
               {photo && (
                 <>
@@ -503,8 +495,44 @@ export default function CampaignApp({
                       </div>
                     </div>
                   )}
+                  <div className="editor-bottom-controls" aria-label="Photo controls">
+                    <label>
+                      <Upload size={20} />
+                      <span>Photo</span>
+                      <input
+                        type="file"
+                        disabled={busy}
+                        accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
+                        onChange={(e) => {
+                          void choosePhoto(e.target.files?.[0]);
+                          e.target.value = "";
+                        }}
+                        aria-label="Change photo"
+                      />
+                    </label>
+                    <button
+                      type="button"
+                      aria-label="Rotate photo"
+                      onClick={() => setRotation((value) => (value + 90) % 360)}
+                    >
+                      <RotateCw size={20} />
+                      <span>Rotate</span>
+                    </button>
+                    <button
+                      type="button"
+                      aria-label="Reset photo position"
+                      onClick={() => {
+                        setCrop({ x: 0, y: 0 });
+                        setZoom(1);
+                        setRotation(0);
+                      }}
+                    >
+                      <RefreshCw size={20} />
+                      <span>Reset</span>
+                    </button>
+                  </div>
                   <button
-                    className="button full"
+                    className="button full editor-create-button"
                     disabled={busy || !area}
                     onClick={() => void generate()}
                   >
