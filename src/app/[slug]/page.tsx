@@ -46,8 +46,10 @@ export default async function CampaignPage({ params, searchParams }: {
       </header>
       <main>
         <section className="simple-campaign-title">
-          <h1>{c.title}</h1>
-          <div className="campaign-owner"><span className="campaign-app-icon"><CampaignIcon size={16} /></span><strong>{c.organization_name}</strong></div>
+          <div className="campaign-title-copy">
+            <h1>{c.title}</h1>
+            <div className="campaign-owner"><span className="campaign-app-icon"><CampaignIcon size={16} /></span><strong>{c.organization_name}</strong></div>
+          </div>
           {(c.event_date_text || c.location) && <div className="event-meta">
             <span><Images size={14} />{frameCount} {frameCount === 1 ? "frame" : "frames"} available</span>
             <span><Users size={14} />{usageCount.toLocaleString()} {usageCount === 1 ? "person" : "people"} joined</span>

@@ -44,7 +44,7 @@ export default function CampaignApp({
   const [step, setStep] = useState(initialStep);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [consent, setConsent] = useState(false);
+  const [consent, setConsent] = useState(!needsDetails);
   const [marketing, setMarketing] = useState(false);
   const [participant, setParticipant] = useState("");
   const [photo, setPhoto] = useState("");
@@ -314,7 +314,7 @@ export default function CampaignApp({
     setStep(initialStep);
     setName("");
     setEmail("");
-    setConsent(false);
+    setConsent(!needsDetails);
     setMarketing(false);
     setParticipant("");
     setPhoto("");
@@ -448,17 +448,13 @@ export default function CampaignApp({
                   ? "Drag to move. Pinch with two fingers to zoom."
                   : "Pick a clear portrait from your phone."}
               </p>
-              {!needsDetails && <label className="check-field simple-consent">
-                <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} />
-                <span>I agree to the <Link href="/privacy" target="_blank">privacy policy</Link>. My photo stays on this device.</span>
-              </label>}
               {!photo && (
                 <label
-                  className={`upload-zone ${!consent ? "disabled" : ""}`}
+                  className="upload-zone"
                   onDragOver={(e) => e.preventDefault()}
                   onDrop={(e) => {
                     e.preventDefault();
-                    if (consent) void choosePhoto(e.dataTransfer.files[0]);
+                    void choosePhoto(e.dataTransfer.files[0]);
                   }}
                 >
                   <Upload size={27} />
@@ -466,7 +462,7 @@ export default function CampaignApp({
                   <small>JPG, PNG or WEBP · up to 15 MB</small>
                   <input
                     type="file"
-                    disabled={!consent || busy}
+                    disabled={busy}
                     accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
                     onChange={(e) => {
                       void choosePhoto(e.target.files?.[0]);
@@ -476,7 +472,11 @@ export default function CampaignApp({
                   />
                 </label>
               )}
-              <p className="offline-note">Your photo is never uploaded.</p>
+              {!photo && (
+                <p className="upload-privacy-note">
+                  By choosing a photo, you agree to the <Link href="/privacy" target="_blank">privacy policy</Link>. Your photo stays on your device.
+                </p>
+              )}
               {photo && (
                 <>
                   {frames.length > 1 && (
