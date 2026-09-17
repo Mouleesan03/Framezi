@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { CalendarDays, GraduationCap, Images, MapPin, Users } from "lucide-react";
+import { CalendarDays, GraduationCap, Images, MapPin, PawPrint, Users } from "lucide-react";
 import Link from "next/link";
 import { getCampaign, getCampaignUsage } from "@/lib/data";
 import { configured, adminClient } from "@/lib/supabase/server";
@@ -30,7 +30,8 @@ export default async function CampaignPage({ params, searchParams }: {
   const preview = (await searchParams).preview === "1" && Boolean(await adminClient());
   const frameCount = c.frames.filter((frame) => frame.is_active).length;
   const usageCount = await getCampaignUsage(c.id);
-  const shortPath = c.slug === "uoj-convocation-2026" ? "/c/uoj41" : c.short_code ? `/c/${c.short_code}` : `/${c.slug}`;
+  const shortPath = c.short_code ? `/c/${c.short_code}` : `/${c.slug}`;
+  const CampaignIcon = c.slug === "world-animal-day-2026" ? PawPrint : GraduationCap;
   return (
     <div className="campaign-page simple-campaign" style={{ "--campaign": c.primary_color, "--blue": c.primary_color } as React.CSSProperties}>
       <header className="simple-campaign-header">
@@ -40,7 +41,7 @@ export default async function CampaignPage({ params, searchParams }: {
       <main>
         <section className="simple-campaign-title">
           <h1>{c.title}</h1>
-          <div className="campaign-owner"><span className="campaign-app-icon"><GraduationCap size={16} /></span><strong>{c.organization_name}</strong></div>
+          <div className="campaign-owner"><span className="campaign-app-icon"><CampaignIcon size={16} /></span><strong>{c.organization_name}</strong></div>
           {(c.event_date_text || c.location) && <div className="event-meta">
             <span><Images size={14} />{frameCount} {frameCount === 1 ? "frame" : "frames"} available</span>
             <span><Users size={14} />{usageCount.toLocaleString()} {usageCount === 1 ? "person" : "people"} joined</span>
@@ -67,7 +68,7 @@ export default async function CampaignPage({ params, searchParams }: {
         <Logo />
         <p>Visual campaigns made simple. Your photo stays on your device.</p>
         <span>Framezi — an <a href="https://infonits.com" target="_blank" rel="noreferrer">Infonits</a> product</span>
-        <div><Link href="/privacy">Privacy</Link><Link href="/terms">Terms</Link></div>
+        <div><Link href="/">Campaigns</Link><Link href="/privacy">Privacy</Link><Link href="/terms">Terms</Link></div>
         <small>© 2026 Infonits. All rights reserved.</small>
       </footer>
     </div>

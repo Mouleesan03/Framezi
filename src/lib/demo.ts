@@ -67,6 +67,59 @@ export const demoCampaign: Campaign = {
     },
   ],
 };
+export const worldAnimalDayCampaign: Campaign = {
+  id: "00000000-0000-4000-8000-000000000101",
+  name: "World Animal Day 2026",
+  slug: "world-animal-day-2026",
+  short_code: "animals26",
+  organization_name: "Ministry of Environment",
+  title: "Stand Up for Every Animal",
+  description:
+    "Join World Animal Day 2026 and share a personal frame that celebrates compassion, protection, and coexistence.",
+  logo_url: "",
+  cover_url: "/frames/world-animal-day-2026.png",
+  primary_color: "#116b3a",
+  secondary_color: "#f4f7ed",
+  accent_color: "#ef7d00",
+  event_date_text: "October 4, 2026",
+  location: "Worldwide",
+  status: "published",
+  start_at: null,
+  end_at: null,
+  require_name: false,
+  require_email: false,
+  show_name_on_image: false,
+  enable_face_centering: false,
+  enable_share: true,
+  enable_facebook: true,
+  enable_png: true,
+  enable_jpg: true,
+  allow_duplicate_emails: true,
+  allow_after_end: false,
+  share_text:
+    "I’m standing up for animals this World Animal Day, October 4, 2026. Protect. Care. Coexist. Create your frame free with Framezi.",
+  privacy_text: PRIVACY,
+  cta_text: "Create My Animal Day Frame",
+  filename_prefix: "World-Animal-Day-2026",
+  thank_you_text:
+    "Thank you for adding your voice for animal welfare and a kinder world.",
+  name_position: "bottom",
+  name_color: "#ffffff",
+  name_font: "Arial",
+  name_font_size: 70,
+  frames: [
+    {
+      id: "00000000-0000-4000-8000-000000000102",
+      name: "Protect · Care · Coexist",
+      frame_url: "/frames/world-animal-day-2026.png",
+      thumbnail_url: "/frames/world-animal-day-2026.png",
+      sort_order: 0,
+      is_active: true,
+    },
+  ],
+};
+
+export const demoCampaigns = [demoCampaign, worldAnimalDayCampaign];
 export const emptyCampaign: Campaign = {
   ...demoCampaign,
   id: "",

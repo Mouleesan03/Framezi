@@ -22,7 +22,7 @@ test("PostgreSQL migration, RLS, registration, deduplication and admin save", as
     await db.exec(readFileSync("supabase/seed.sql", "utf8"));
     const cid = demoCampaign.id;
     await db.exec("set role anon");
-    assert.equal((await db.query("select * from campaigns")).rows.length, 1);
+    assert.equal((await db.query("select * from campaigns")).rows.length, 2);
     await assert.rejects(db.query("select * from participants"));
     await assert.rejects(
       db.query(`select register_participant($1,'A','a@example.com',false)`, [
@@ -159,7 +159,7 @@ test("PostgreSQL migration, RLS, registration, deduplication and admin save", as
       JSON.stringify({ ...copy, id: saved.rows[0].id, title: "Updated title" }),
     ]);
     await db.exec("reset role;set role anon");
-    assert.equal((await db.query("select * from campaigns")).rows.length, 1);
+    assert.equal((await db.query("select * from campaigns")).rows.length, 2);
     await db.exec(
       `reset role;set role authenticated;set request.jwt.claim.sub='00000000-0000-4000-8000-000000000011';`,
     );

@@ -1,9 +1,9 @@
 import "server-only";
 import { configured, serverClient } from "./supabase/server";
-import { demoCampaign } from "./demo";
+import { demoCampaigns } from "./demo";
 import type { Campaign } from "./types";
 export async function getCampaign(slug: string): Promise<Campaign | null> {
-  if (!configured()) return slug === demoCampaign.slug ? demoCampaign : null;
+  if (!configured()) return demoCampaigns.find((campaign) => campaign.slug === slug) || null;
   const db = await serverClient();
   const { data, error } = await db
     .from("campaigns")

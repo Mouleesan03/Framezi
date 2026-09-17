@@ -19,6 +19,8 @@ Open http://localhost:3000 (or the port printed by Next.js). Without Supabase cr
 - `/`: landing page
 - `/uoj-convocation-2026`: seeded public demo
 - `/c/uoj41`: short link for the seeded public demo
+- `/world-animal-day-2026`: World Animal Day 2026 campaign
+- `/c/animals26`: short link for World Animal Day
 - `/admin`: administrator sign-in
 - `/admin/dashboard`, `/admin/campaigns`, `/admin/campaigns/new`
 - `/admin/campaigns/[id]`, `/edit`, `/analytics`
@@ -29,7 +31,7 @@ Open http://localhost:3000 (or the port printed by Next.js). Without Supabase cr
 
 1. Create a Supabase project.
 2. Run `supabase/migrations/001_framezi.sql`, then `supabase/migrations/002_public_campaign_stats.sql`, in the SQL editor. They create the tables, indexes, RLS, guarded RPCs, short links, download-based public usage counts, and the public `campaign-assets` bucket.
-3. For development, run `supabase/seed.sql`. The demo uses the three supplied University of Jaffna convocation frames; future campaigns can upload transparent square PNG overlays.
+3. For development, run `supabase/seed.sql`. The demo includes the three supplied University of Jaffna convocation frames and the supplied World Animal Day frame; future campaigns can upload transparent square PNG overlays.
 4. Under Authentication settings, **disable public sign-ups**. The application has no registration UI, but the project-level switch must also be disabled.
 5. Create your first user manually in Authentication → Users. Set its email and password and confirm the email.
 6. Create the matching administrator profile in the SQL editor, replacing the example UUID and email:
@@ -142,4 +144,4 @@ The first version loads administrator metadata for client-side charts and export
 
 ## Demo assets
 
-The three University of Jaffna campaign frames were supplied for this project. The sample Sri Lankan graduate portrait is an AI-generated demonstration asset and does not depict a real participant. Replace campaign artwork only with assets you are authorized to publish.
+The University of Jaffna and World Animal Day campaign frames were supplied for this project. The sample Sri Lankan graduate portrait is an AI-generated demonstration asset and does not depict a real participant. Replace campaign artwork only with assets you are authorized to publish.
