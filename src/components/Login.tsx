@@ -52,7 +52,7 @@ export default function Login({ configured }: { configured: boolean }) {
       <main className="login-form">
         <Logo />
         <h2>Welcome back.</h2>
-        <p>Sign in to your Framezi administrator account.</p>
+        <p>Sign in to your Framezi creator account.</p>
         {!configured && (
           <div className="notice">
             Administrator sign-in needs Supabase setup. Add the environment
@@ -91,8 +91,7 @@ export default function Login({ configured }: { configured: boolean }) {
           </button>
         </form>
         <p className="muted" style={{ marginTop: 22 }}>
-          Accounts are created by your administrator. Public registration is not
-          available.
+          New creators can make a free profile from the Start a campaign flow.
         </p>
         <Link
           className="text-link"

@@ -17,6 +17,7 @@ npm run dev
 Open http://localhost:3000 (or the port printed by Next.js). Without Supabase credentials, the University of Jaffna demo works locally and explicitly does **not** save participant details. Administrator pages stay protected; there is no fake admin bypass.
 
 - `/`: landing page
+- `/create`: free campaign creation flow
 - `/uoj-convocation-2026`: seeded public demo
 - `/c/uoj41`: short link for the seeded public demo
 - `/world-animal-day-2026`: World Animal Day 2026 campaign
@@ -25,7 +26,7 @@ Open http://localhost:3000 (or the port printed by Next.js). Without Supabase cr
 - `/c/teachers26`: short link for World Teachers’ Day
 - `/world-mental-health-day-2026`: World Mental Health Day 2026 campaign
 - `/c/mind26`: short link for World Mental Health Day
-- `/admin`: administrator sign-in
+- `/admin`: creator and platform-administrator sign-in
 - `/admin/dashboard`, `/admin/campaigns`, `/admin/campaigns/new`
 - `/admin/campaigns/[id]`, `/edit`, `/analytics`
 - `/admin/submissions`, `/admin/analytics`, `/admin/settings`
@@ -34,18 +35,18 @@ Open http://localhost:3000 (or the port printed by Next.js). Without Supabase cr
 ## Supabase setup
 
 1. Create a Supabase project.
-2. Run `supabase/migrations/001_framezi.sql`, then `supabase/migrations/002_public_campaign_stats.sql`, in the SQL editor. They create the tables, indexes, RLS, guarded RPCs, short links, download-based public usage counts, and the public `campaign-assets` bucket.
+2. Run `supabase/migrations/001_framezi.sql`, `supabase/migrations/002_public_campaign_stats.sql`, and `supabase/migrations/003_creator_accounts.sql` in that order in the SQL editor. They create the tables, indexes, creator ownership rules, guarded RPCs, short links, download-based public usage counts, and the public `campaign-assets` bucket.
 3. For development, run `supabase/seed.sql`. The demo includes the supplied University of Jaffna, World Animal Day, World Teachers’ Day, and World Mental Health Day frames; future campaigns can upload transparent square PNG overlays.
-4. Under Authentication settings, **disable public sign-ups**. The application has no registration UI, but the project-level switch must also be disabled.
-5. Create your first user manually in Authentication → Users. Set its email and password and confirm the email.
-6. Create the matching administrator profile in the SQL editor, replacing the example UUID and email:
+4. Under Authentication → Providers → Email, enable email/password sign-ups and turn **Confirm email off**. Framezi intentionally creates a session immediately so creators do not receive an OTP or verification email in the free launch version.
+5. Under Authentication → URL Configuration, set Site URL to `https://framezi.app` and add `https://framezi.app/**` plus your localhost URL to Redirect URLs.
+6. Create an optional platform administrator manually in Authentication → Users, then create its administrator profile in the SQL editor:
 
 ```sql
 insert into public.profiles (id, email, full_name, role)
 values ('YOUR-AUTH-USER-UUID', 'admin@your-domain.example', 'Campaign Admin', 'admin');
 ```
 
-Only users with an administrator profile can enter the dashboard or mutate campaigns. Profiles cannot be self-created through the public client.
+People who use Start a campaign receive a `creator` profile and can access only campaigns and participant activity they own. The manually created `admin` role can access the complete platform dashboard.
 
 ### Environment variables
 
@@ -59,11 +60,11 @@ NEXT_PUBLIC_SITE_URL=https://framezi.app
 RATE_LIMIT_SECRET=YOUR-RANDOM-32-CHARACTER-OR-LONGER-SECRET
 ```
 
-Never prefix the service-role key with `NEXT_PUBLIC_`. Its access is restricted to `server-only` modules. Never commit `.env.local`. The service key is used only for tightly validated public registration/events and the database-backed limiter. Admin operations use the authenticated user's RLS context.
+Never prefix the service-role key with `NEXT_PUBLIC_`. Its access is restricted to `server-only` modules. Never commit `.env.local`. The service key is used only for validated sign-up/profile creation, public registration/events, creator asset storage, and the database-backed limiter. Campaign records and analytics use the authenticated creator's RLS context.
 
 ### Database design
 
-- `profiles`: administrator role and identity
+- `profiles`: creator or platform-administrator role and identity
 - `campaigns`: branding, lifecycle, dates, participant and sharing configuration
 - `campaign_frames`: admin-owned overlays
 - `participants`: name, email, participation/marketing consent and activity timestamps
@@ -76,7 +77,7 @@ The duplicate-email check runs with a campaign row lock. Counted activity is ded
 
 ## Create a campaign
 
-Sign in at `/admin`. Select **Create Campaign** and work through:
+Use **Start a campaign** on the homepage for the mobile-first free flow, or sign in at `/admin` for the full dashboard editor.
 
 1. Campaign name, slug, organization, title, dates, and description.
 2. Logo, cover image, colors, and messages.
@@ -97,7 +98,7 @@ The visitor file input is never placed in a submitted form. `loadImageFromFile()
 
 No visitor image bytes, filenames, EXIF, hashes, dimensions, face landmarks, or Blob URLs are included in registration or analytics requests. No image goes to Supabase, Vercel, an image host, browser persistence, analytics, or remote cache. Blob URLs are revoked when replaced/unmounted. Create Another clears participant and image state. Downloads save to the user's device. Explicit native sharing hands the chosen file to the user's chosen app; Facebook receives only the campaign URL.
 
-Only the separate, authenticated **admin asset** endpoint uploads images, and only to the campaign assets bucket. The visitor editor never calls it. Sample portraits and overlays are public project assets, not visitor images.
+Only the separate, authenticated **creator asset** endpoint uploads campaign frames and thumbnails, and it stores them under the creator's user ID in the campaign assets bucket. The visitor editor never calls it. Sample portraits and overlays are public project assets, not visitor images.
 
 ### Offline editing and format support
 
@@ -122,7 +123,7 @@ npm start
 
 The build uses Next's supported webpack builder because the local sandbox denied a Turbopack worker's port binding. The development server uses Turbopack normally.
 
-Tests run real PostgreSQL semantics via PGlite with stub Supabase auth/storage schemas. They check migration execution, RLS isolation, administrator save, duplicate-email rules, generation deduplication, rate limiting, strict metadata validation, safe CSV, and campaign dates. This does not replace verification against your hosted Supabase project.
+Tests run real PostgreSQL semantics via PGlite with stub Supabase auth/storage schemas. They check migration execution, creator ownership isolation, administrator and creator saves, duplicate-email rules, generation deduplication, rate limiting, strict metadata validation, safe CSV, and campaign dates. This does not replace verification against your hosted Supabase project.
 
 See `QA.md` for completed checks and deployment-dependent work. No production-readiness claim should be made before live auth/storage/RLS integration, load limits, domain settings, and target-device testing are completed.
 
@@ -130,10 +131,10 @@ See `QA.md` for completed checks and deployment-dependent work. No production-re
 
 1. Push this project to your repository and import it into Vercel as a Next.js project.
 2. Set the environment variables above for Preview and Production as appropriate. Use separate development/production Supabase projects where possible.
-3. Run the migration and seed only where intended. Create the administrator and disable public sign-up.
+3. Run all three migrations and seed only where intended. Enable email/password sign-up and disable Confirm email for the no-OTP launch flow.
 4. Build command: `npm run build`. Do not configure a static output export: the application requires a Next.js server runtime.
 5. Configure Supabase Site URL and allowed redirect URLs for the actual deployed domain.
-6. Deploy and test administrator login, asset upload, published registration, analytics, and database policies using non-sensitive test records.
+6. Deploy and test creator sign-up/sign-in, asset upload, campaign publishing, participant registration, analytics, and ownership policies using non-sensitive test records.
 7. In Vercel → Project → Settings → Domains, add your chosen domain. Apply the DNS records Vercel supplies. Set `NEXT_PUBLIC_SITE_URL` and Supabase settings to match and redeploy.
 
 A hosted project was not provisioned by this build. You must supply your Supabase/Vercel accounts and environment values. Never paste the service-role key into a campaign form or public client code.
@@ -144,7 +145,7 @@ Security headers deny framing, restrict resource origins, and prevent MIME sniff
 
 The database limiter uses short-lived HMACs of the deployment's forwarded address and an hourly window: 30 registration attempts, 20 login attempts, 500 activity events per address/hour. Tune limits for shared university networks and add Vercel Firewall rules for large public launches. Forwarded headers must come from your trusted proxy; do not expose a self-hosted origin behind untrusted forwarding headers.
 
-The first version loads administrator metadata for client-side charts and exports. For very large campaigns, move aggregation and paginated searches to SQL and stream CSV exports. Plan retention and authorized access to exported registration records. Review the supplied generic privacy and terms copy for your actual organization and jurisdiction.
+The first version loads creator-owned metadata for client-side charts and exports. For very large campaigns, move aggregation and paginated searches to SQL and stream CSV exports. Plan retention and authorized access to exported registration records. Review the supplied generic privacy and terms copy for your actual organization and jurisdiction.
 
 ## Demo assets
 

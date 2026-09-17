@@ -31,6 +31,11 @@ export default function Page() {
           University of Jaffna demo uses placeholder designs and no official
           university logo.
         </p>
+        <p>
+          Creator accounts may publish campaign frames and thumbnails. You must
+          own or have permission to publish every uploaded design, logo, image,
+          and message.
+        </p>
         <h2>Availability</h2>
         <p>
           Features such as sharing, image decoding, and face centring depend on

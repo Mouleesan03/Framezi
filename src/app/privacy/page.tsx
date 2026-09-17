@@ -17,6 +17,10 @@ export default function Page() {
           personalised event photo frames. When you register, we may store:
         </p>
         <ul>
+          <li>
+            Creator profile name, email address, account identifier, and
+            authentication session when you create campaigns.
+          </li>
           <li>Your name and email address, as required by the campaign.</li>
           <li>The campaign you participate in and your registration time.</li>
           <li>
@@ -40,6 +44,11 @@ export default function Page() {
           Marketing consent is optional, unchecked by default, and separate from
           participation consent.
         </p>
+        <p>
+          Creator account details are used to secure the dashboard and keep each
+          creator’s campaigns, participant records, and analytics separate from
+          other creators.
+        </p>
         <h2>Sharing your frame</h2>
         <p>
           Downloading saves a file to your device. If you choose your device’s
@@ -53,7 +62,7 @@ export default function Page() {
           deployment provider serves the application. Hosting providers may
           process network information, such as IP addresses, for delivery and
           security. Framezi’s rate limiter stores short-lived keyed hashes
-          rather than raw IP addresses. Administrator-uploaded branding and
+          rather than raw IP addresses. Creator-uploaded branding and
           frame artwork may be publicly hosted.
         </p>
         <h2>Retention and your choices</h2>
@@ -67,7 +76,7 @@ export default function Page() {
         </p>
         <h2>Cookies and device storage</h2>
         <p>
-          Secure session cookies support administrator sign-in and validate
+          Secure session cookies support creator sign-in and validate
           participation events. We do not store photographs in cookies,
           localStorage, sessionStorage, or service worker caches. This
           application does not include advertising or third-party tracking

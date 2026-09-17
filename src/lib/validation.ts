@@ -59,6 +59,8 @@ export const campaignSchema = z
           ![
             "admin",
             "api",
+            "create",
+            "c",
             "privacy",
             "terms",
             "demo",
@@ -67,7 +69,10 @@ export const campaignSchema = z
           ].includes(v),
         "Reserved slug",
       ),
-    short_code: z.string().regex(/^[a-zA-Z0-9_-]{4,16}$/).optional(),
+    short_code: z
+      .string()
+      .regex(/^[a-zA-Z0-9_-]{4,16}$/)
+      .optional(),
     organization_name: safeText(160).min(1),
     title: safeText(160).min(1),
     description: safeText(1500),

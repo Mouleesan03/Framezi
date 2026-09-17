@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
-import { adminClient } from "@/lib/supabase/server";
+import { creatorAccount, serviceClient } from "@/lib/supabase/server";
 import { sameOrigin } from "@/lib/api";
 import { randomUUID } from "node:crypto";
-// Administrator-owned campaign assets only. Visitor photos never use this endpoint.
+// Creator-owned campaign assets only. Visitor photos never use this endpoint.
 export async function POST(req: Request) {
   if (!sameOrigin(req)) return new Response(null, { status: 403 });
-  const db = await adminClient();
-  if (!db) return new Response(null, { status: 401 });
+  const account = await creatorAccount();
+  if (!account) return new Response(null, { status: 401 });
   const kind = new URL(req.url).searchParams.get("kind");
   const type = req.headers.get("content-type") || "";
   if (
@@ -44,7 +44,8 @@ export async function POST(req: Request) {
     bytes.toString("ascii", 8, 12) === "WEBP";
   if (!(type === "image/png" ? png : type === "image/jpeg" ? jpg : webp))
     return NextResponse.json({ error: "Invalid image file." }, { status: 400 });
-  const path = `${randomUUID()}.${type.split("/")[1]}`;
+  const db = serviceClient();
+  const path = `${account.user.id}/${randomUUID()}.${type.split("/")[1]}`;
   const { error } = await db.storage
     .from("campaign-assets")
     .upload(path, bytes, { contentType: type, upsert: false });

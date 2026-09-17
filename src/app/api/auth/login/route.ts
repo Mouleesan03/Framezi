@@ -34,10 +34,10 @@ export async function POST(req: Request) {
       .select("role")
       .eq("id", data.user.id)
       .single();
-    if (profile?.role !== "admin") {
+    if (!profile || !["admin", "creator"].includes(profile.role)) {
       await db.auth.signOut();
       return NextResponse.json(
-        { error: "Administrator access required." },
+        { error: "Framezi creator access required." },
         { status: 403 },
       );
     }

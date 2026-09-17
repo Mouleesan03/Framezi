@@ -15,7 +15,12 @@ test("PostgreSQL migration, RLS, registration, deduplication and admin save", as
         "",
       ),
     );
-    await db.exec(readFileSync("supabase/migrations/002_public_campaign_stats.sql", "utf8"));
+    await db.exec(
+      readFileSync("supabase/migrations/002_public_campaign_stats.sql", "utf8"),
+    );
+    await db.exec(
+      readFileSync("supabase/migrations/003_creator_accounts.sql", "utf8"),
+    );
     await db.exec(
       `grant select,insert,update,delete on campaigns,campaign_frames to anon,authenticated;grant select on profiles to authenticated;grant all on all tables in schema public to service_role;`,
     );
@@ -88,11 +93,21 @@ test("PostgreSQL migration, RLS, registration, deduplication and admin save", as
       1,
     );
     assert.equal(
-      (await db.query<{ n: number }>("select campaign_usage_count($1)::integer n", [cid])).rows[0].n,
+      (
+        await db.query<{ n: number }>(
+          "select campaign_usage_count($1)::integer n",
+          [cid],
+        )
+      ).rows[0].n,
       1,
     );
     assert.ok(
-      (await db.query<{ short_code: string }>("select short_code from campaigns where id=$1", [cid])).rows[0].short_code,
+      (
+        await db.query<{ short_code: string }>(
+          "select short_code from campaigns where id=$1",
+          [cid],
+        )
+      ).rows[0].short_code,
     );
     assert.ok(
       (
@@ -128,7 +143,7 @@ test("PostgreSQL migration, RLS, registration, deduplication and admin save", as
       false,
     );
     await db.exec(
-      `reset role;insert into auth.users values('00000000-0000-4000-8000-000000000010');insert into profiles(id,email) values('00000000-0000-4000-8000-000000000010','admin@example.com');set role authenticated;set request.jwt.claim.sub='00000000-0000-4000-8000-000000000010';`,
+      `reset role;insert into auth.users values('00000000-0000-4000-8000-000000000010');insert into profiles(id,email,role) values('00000000-0000-4000-8000-000000000010','admin@example.com','admin');set role authenticated;set request.jwt.claim.sub='00000000-0000-4000-8000-000000000010';`,
     );
     assert.equal((await db.query("select * from participants")).rows.length, 1);
     const copy = {
@@ -167,6 +182,42 @@ test("PostgreSQL migration, RLS, registration, deduplication and admin save", as
     await assert.rejects(
       db.query("select save_campaign($1::jsonb)", [JSON.stringify(copy)]),
     );
+    await db.exec(
+      `reset role;insert into auth.users values('00000000-0000-4000-8000-000000000012');insert into profiles(id,email,role) values('00000000-0000-4000-8000-000000000012','creator@example.com','creator');set role authenticated;set request.jwt.claim.sub='00000000-0000-4000-8000-000000000012';`,
+    );
+    const creatorSaved = await db.query<{ id: string }>(
+      "select save_campaign($1::jsonb) id",
+      [
+        JSON.stringify({
+          ...copy,
+          id: "",
+          slug: "creator-campaign",
+          frames: copy.frames.map((frame, index) => ({
+            ...frame,
+            id: `00000000-0000-4000-8000-00000000004${index}`,
+          })),
+        }),
+      ],
+    );
+    assert.ok(creatorSaved.rows[0].id);
+    assert.equal(
+      (
+        await db.query(
+          "select * from campaigns where created_by=auth.uid()",
+        )
+      ).rows.length,
+      1,
+    );
+    assert.equal(
+      (
+        await db.query(
+          "update campaigns set title='blocked' where id=$1 returning id",
+          [cid],
+        )
+      ).rows.length,
+      0,
+    );
+    assert.equal((await db.query("select * from participants")).rows.length, 0);
   } finally {
     await db.close();
   }

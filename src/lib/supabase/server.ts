@@ -38,6 +38,9 @@ export function serviceClient() {
   );
 }
 export async function adminClient() {
+  return (await creatorAccount())?.client ?? null;
+}
+export async function creatorAccount() {
   if (!configured()) return null;
   const client = await serverClient();
   const {
@@ -49,5 +52,7 @@ export async function adminClient() {
     .select("role")
     .eq("id", user.id)
     .single();
-  return data?.role === "admin" ? client : null;
+  return data?.role === "admin" || data?.role === "creator"
+    ? { client, user, role: data.role as "admin" | "creator" }
+    : null;
 }

@@ -1,5 +1,5 @@
 import { notFound, redirect } from "next/navigation";
-import { adminClient } from "@/lib/supabase/server";
+import { creatorAccount } from "@/lib/supabase/server";
 import { emptyCampaign } from "@/lib/demo";
 import type { Campaign, Participant, Event } from "@/lib/types";
 import CampaignForm from "@/components/CampaignForm";
@@ -10,8 +10,9 @@ export default async function Page({
   params: Promise<{ path: string[] }>;
 }) {
   const { path } = await params;
-  const db = await adminClient();
-  if (!db) redirect("/admin");
+  const account = await creatorAccount();
+  if (!account) redirect("/admin");
+  const db = account.client;
   if (path.join("/") === "campaigns/new")
     return <CampaignForm initial={emptyCampaign} />;
   if (
@@ -25,10 +26,13 @@ export default async function Page({
     path.length > 3
   )
     notFound();
-  const { data: campaignData, error } = await db
+  let campaignQuery = db
     .from("campaigns")
     .select("*,frames:campaign_frames(*)")
     .order("created_at", { ascending: false });
+  if (account.role === "creator")
+    campaignQuery = campaignQuery.eq("created_by", account.user.id);
+  const { data: campaignData, error } = await campaignQuery;
   if (error)
     throw new Error("Unable to load campaigns. Check the database migration.");
   const campaigns = campaignData as Campaign[];

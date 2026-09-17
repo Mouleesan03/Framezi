@@ -9,6 +9,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { Footer, Logo } from "@/components/Brand";
+import HomeCampaignLauncher from "@/components/HomeCampaignLauncher";
 
 const campaigns = [
   {
@@ -71,8 +72,8 @@ export default function Home() {
           <h1>Show up for the moments that <span>matter.</span></h1>
           <p>Choose a campaign, add your photo, and download a share-ready frame in seconds.</p>
           <div className="simple-actions">
-            <a className="button" href="#campaigns">Explore campaigns <ArrowRight size={18} /></a>
-            <a className="hero-text-link" href="#how-it-works">See how it works</a>
+            <HomeCampaignLauncher />
+            <a className="hero-text-link" href="#how-it-works">How it works <ArrowRight size={16} /></a>
           </div>
           <div className="simple-trust">
             <span><Check size={15} /> Always free</span>
@@ -80,21 +81,8 @@ export default function Home() {
             <span><Download size={15} /> No watermark</span>
           </div>
         </div>
-        <div className="home-hero-gallery" aria-label="Framezi campaign examples">
-          <div className="simple-demo-card hero-card-main">
-            <div className="simple-demo-photo">
-              <img src="/sample-animal-advocate.png" alt="Animal advocate using the World Animal Day campaign frame" />
-              <img src="/frames/world-animal-day-2026.png" alt="" />
-            </div>
-            <div className="simple-demo-label"><Check size={17} /> World Animal Day · October 4</div>
-          </div>
-          <div className="hero-mini-card">
-            <div>
-              <img src="/sample-sri-lankan-graduate.png" alt="" />
-              <img src="/frames/uoj-41st-convocation.png" alt="" />
-            </div>
-            <span>Graduation 2026</span>
-          </div>
+        <div className="home-hero-gallery" aria-label="People and causes connected through Framezi campaigns">
+          <img className="framezi-hero-art" src="/framezi-hero-community.png" alt="Framezi campaign examples for animals, mental health, the planet, and kindness" />
         </div>
       </section>
 
