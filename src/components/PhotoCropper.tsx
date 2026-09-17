@@ -9,6 +9,8 @@ export default function PhotoCropper({
   onCropChange,
   onZoomChange,
   onComplete,
+  onInteractionStart,
+  onInteractionEnd,
 }: {
   image: string;
   crop: { x: number; y: number };
@@ -17,6 +19,8 @@ export default function PhotoCropper({
   onCropChange: (v: { x: number; y: number }) => void;
   onZoomChange: (v: number) => void;
   onComplete: (v: CropArea) => void;
+  onInteractionStart: () => void;
+  onInteractionEnd: () => void;
 }) {
   return (
     <Cropper
@@ -28,6 +32,8 @@ export default function PhotoCropper({
       onCropChange={onCropChange}
       onZoomChange={onZoomChange}
       onCropComplete={(_, pixels) => onComplete(pixels)}
+      onInteractionStart={onInteractionStart}
+      onInteractionEnd={onInteractionEnd}
       showGrid={false}
       restrictPosition={false}
       minZoom={1}

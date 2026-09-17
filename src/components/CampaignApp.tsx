@@ -61,6 +61,7 @@ export default function CampaignApp({
   const [ready, setReady] = useState(false);
   const [analyticsOffline, setAnalyticsOffline] = useState(false);
   const [proof, setProof] = useState("");
+  const [adjusting, setAdjusting] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const [publicShareUrl, setPublicShareUrl] = useState("");
   const imageRef = useRef<HTMLImageElement | null>(null);
@@ -100,6 +101,16 @@ export default function CampaignApp({
     window.addEventListener("keydown", closeOnEscape);
     return () => window.removeEventListener("keydown", closeOnEscape);
   }, [shareOpen]);
+  useEffect(() => {
+    if (!adjusting) return;
+    const stopAdjusting = () => setAdjusting(false);
+    window.addEventListener("pointerup", stopAdjusting);
+    window.addEventListener("pointercancel", stopAdjusting);
+    return () => {
+      window.removeEventListener("pointerup", stopAdjusting);
+      window.removeEventListener("pointercancel", stopAdjusting);
+    };
+  }, [adjusting]);
   const event = useCallback(
     (type: string, frameId?: string, generationId?: string) => {
       if (demo) return;
@@ -242,6 +253,7 @@ export default function CampaignApp({
       setCrop({ x: 0, y: 0 });
       setZoom(1);
       setRotation(0);
+      setAdjusting(false);
       setArea(null);
       setStep(2);
       if (alreadyRegistered) event("photo_selected");
@@ -275,6 +287,7 @@ export default function CampaignApp({
       counted.current.clear();
       event("generated", selected, generation.current);
       setStep(4);
+      setAdjusting(false);
     } catch {
       setError(
         "We could not create your frame. Try a smaller photo or a different frame.",
@@ -356,6 +369,7 @@ export default function CampaignApp({
     setCrop({ x: 0, y: 0 });
     setZoom(1);
     setRotation(0);
+    setAdjusting(false);
     setArea(null);
     setSelected(frames[0]?.id || "");
     setError("");
@@ -688,7 +702,11 @@ export default function CampaignApp({
           )}
         </div>
         <div className="editor-preview">
-          <div className="preview-square" ref={previewRef}>
+          <div
+            className={`preview-square ${adjusting ? "is-adjusting" : ""}`}
+            ref={previewRef}
+            onPointerDown={() => photo && step === 2 && setAdjusting(true)}
+          >
             {step === 4 && result ? (
               <img src={result} alt="Your generated frame" />
             ) : step === 3 && proof ? (
@@ -704,6 +722,8 @@ export default function CampaignApp({
                     onCropChange={setCrop}
                     onZoomChange={setZoom}
                     onComplete={setArea}
+                    onInteractionStart={() => setAdjusting(true)}
+                    onInteractionEnd={() => setAdjusting(false)}
                   />
                 ) : (
                   <img
