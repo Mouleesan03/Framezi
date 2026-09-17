@@ -29,6 +29,7 @@ export default function PhotoCropper({
       onZoomChange={onZoomChange}
       onCropComplete={(_, pixels) => onComplete(pixels)}
       showGrid={false}
+      restrictPosition={false}
       minZoom={1}
       maxZoom={3}
       objectFit="cover"

@@ -61,6 +61,8 @@ export default function CampaignApp({
   const [ready, setReady] = useState(false);
   const [analyticsOffline, setAnalyticsOffline] = useState(false);
   const [proof, setProof] = useState("");
+  const [shareOpen, setShareOpen] = useState(false);
+  const [publicShareUrl, setPublicShareUrl] = useState("");
   const imageRef = useRef<HTMLImageElement | null>(null);
   const frameImages = useRef(new Map<string, HTMLImageElement>());
   const canvas = useRef<HTMLCanvasElement | null>(null);
@@ -71,20 +73,33 @@ export default function CampaignApp({
   const eventQueue = useRef(Promise.resolve());
   const viewed = useRef(false);
   const active = frames.find((f) => f.id === selected);
-  const placeholderPhoto = {
-    "uoj-convocation-2026": "/sample-sri-lankan-graduate.png",
-    "world-animal-day-2026": "/sample-animal-advocate.png",
-    "world-teachers-day-2026": "/sample-teacher.png",
-    "world-mental-health-day-2026": "/sample-mental-health-supporter.png",
-  }[c.slug] || "/sample-sri-lankan-graduate.png";
+  const sharePath = c.short_code ? `/c/${c.short_code}` : `/${c.slug}`;
+  const placeholderPhoto =
+    {
+      "uoj-convocation-2026": "/sample-sri-lankan-graduate.png",
+      "world-animal-day-2026": "/sample-animal-advocate.png",
+      "world-teachers-day-2026": "/sample-teacher.png",
+      "world-mental-health-day-2026": "/sample-mental-health-supporter.png",
+    }[c.slug] || "/sample-sri-lankan-graduate.png";
   const notify = (message: string) => {
     setToast(message);
   };
+  useEffect(() => {
+    setPublicShareUrl(`${window.location.origin}${sharePath}`);
+  }, [sharePath]);
   useEffect(() => {
     if (!toast) return;
     const id = setTimeout(() => setToast(""), 4000);
     return () => clearTimeout(id);
   }, [toast]);
+  useEffect(() => {
+    if (!shareOpen) return;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setShareOpen(false);
+    };
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, [shareOpen]);
   const event = useCallback(
     (type: string, frameId?: string, generationId?: string) => {
       if (demo) return;
@@ -184,16 +199,16 @@ export default function CampaignApp({
       return id;
     }
     const r = await fetch("/api/register", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            campaign_id: c.id,
-            name,
-            email,
-            consent,
-            marketing_consent: marketing,
-          }),
-        });
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        campaign_id: c.id,
+        name,
+        email,
+        consent,
+        marketing_consent: marketing,
+      }),
+    });
     const data = await r.json();
     if (!r.ok) throw new Error(data.error || "Unable to continue.");
     setParticipant(data.id);
@@ -286,21 +301,29 @@ export default function CampaignApp({
       setError("Download unavailable. Please try again.");
     }
   }
+  function countShare() {
+    if (!counted.current.has("share")) {
+      event("share", selected, generation.current);
+      counted.current.add("share");
+    }
+  }
   async function share() {
     if (!blob.current) return;
     try {
       const file = createShareFile(blob.current, filename("png"));
-      const url = `${window.location.origin}${c.short_code ? `/c/${c.short_code}` : `/${c.slug}`}`;
+      const url = publicShareUrl || `${window.location.origin}${sharePath}`;
       if (navigator.share) {
         if (navigator.canShare?.({ files: [file] }))
-          await navigator.share({ files: [file], title: c.title, text: `${c.share_text}\n${url}` });
+          await navigator.share({
+            files: [file],
+            title: c.title,
+            text: `${c.share_text}\n${url}`,
+          });
         else await navigator.share({ title: c.title, url, text: c.share_text });
-        if (!counted.current.has("share")) {
-          event("share", selected, generation.current);
-          counted.current.add("share");
-        }
+        countShare();
       } else {
         await navigator.clipboard.writeText(`${c.share_text}\n${url}`);
+        countShare();
         notify("Campaign caption and short link copied!");
       }
     } catch (e) {
@@ -308,6 +331,16 @@ export default function CampaignApp({
         setError(
           "Sharing could not be opened. Download your frame or copy the campaign link.",
         );
+    }
+  }
+  async function copyShareLink() {
+    try {
+      const url = publicShareUrl || `${window.location.origin}${sharePath}`;
+      await navigator.clipboard.writeText(`${c.share_text}\n${url}`);
+      countShare();
+      notify("Campaign caption and short link copied!");
+    } catch {
+      setError("The link could not be copied. Select and copy it below.");
     }
   }
   function reset() {
@@ -326,6 +359,7 @@ export default function CampaignApp({
     setArea(null);
     setSelected(frames[0]?.id || "");
     setError("");
+    setShareOpen(false);
     imageRef.current = null;
     blob.current = null;
     if (canvas.current) canvas.current.width = canvas.current.height = 0;
@@ -339,7 +373,9 @@ export default function CampaignApp({
       </div>
     );
   return (
-    <div className={`generator ${photo && step === 2 ? "photo-editor" : ""} ${step === 4 ? "result-editor" : ""}`}>
+    <div
+      className={`generator ${photo && step === 2 ? "photo-editor" : ""} ${step === 4 ? "result-editor" : ""}`}
+    >
       {demo && (
         <div className="notice">
           Free to use · No watermark · No email required
@@ -365,13 +401,51 @@ export default function CampaignApp({
       {photo && (step === 2 || step === 4) && (
         <div className="mobile-editor-header">
           <strong>{step === 4 ? "Your graduation frame" : c.name}</strong>
-          <button aria-label="Close editor" onClick={reset}><X size={24} /></button>
+          <button aria-label="Close editor" onClick={reset}>
+            <X size={24} />
+          </button>
         </div>
       )}
       {photo && step === 2 && (
-        <div className="editor-gesture-hint">
-          <Move size={16} aria-hidden="true" />
-          <span>Drag to move · Pinch with two fingers to zoom</span>
+        <div className="editor-topbar">
+          <div className="editor-gesture-hint">
+            <Move size={15} aria-hidden="true" />
+            <span>Move · Pinch</span>
+          </div>
+          <div className="editor-top-actions" aria-label="Photo controls">
+            <label aria-label="Change photo" title="Change photo">
+              <Upload size={18} />
+              <input
+                type="file"
+                disabled={busy}
+                accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
+                onChange={(e) => {
+                  void choosePhoto(e.target.files?.[0]);
+                  e.target.value = "";
+                }}
+              />
+            </label>
+            <button
+              type="button"
+              aria-label="Rotate photo"
+              title="Rotate photo"
+              onClick={() => setRotation((value) => (value + 90) % 360)}
+            >
+              <RotateCw size={18} />
+            </button>
+            <button
+              type="button"
+              aria-label="Reset photo position"
+              title="Reset photo position"
+              onClick={() => {
+                setCrop({ x: 0, y: 0 });
+                setZoom(1);
+                setRotation(0);
+              }}
+            >
+              <RefreshCw size={18} />
+            </button>
+          </div>
         </div>
       )}
       <div className="generator-layout editing">
@@ -388,29 +462,33 @@ export default function CampaignApp({
                 Enter the details requested by this campaign.
               </p>
               <form onSubmit={register}>
-                {c.require_name && <label className="field">
-                  Your Name {c.require_name ? "*" : "(optional)"}
-                  <input
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    maxLength={60}
-                    required={c.require_name}
-                    placeholder="Enter your name"
-                    autoComplete="name"
-                  />
-                </label>}
-                {c.require_email && <label className="field">
-                  Email Address {c.require_email ? "*" : "(optional)"}
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    maxLength={150}
-                    required={c.require_email}
-                    placeholder="name@example.com"
-                    autoComplete="email"
-                  />
-                </label>}
+                {c.require_name && (
+                  <label className="field">
+                    Your Name {c.require_name ? "*" : "(optional)"}
+                    <input
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      maxLength={60}
+                      required={c.require_name}
+                      placeholder="Enter your name"
+                      autoComplete="name"
+                    />
+                  </label>
+                )}
+                {c.require_email && (
+                  <label className="field">
+                    Email Address {c.require_email ? "*" : "(optional)"}
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      maxLength={150}
+                      required={c.require_email}
+                      placeholder="name@example.com"
+                      autoComplete="email"
+                    />
+                  </label>
+                )}
                 <label className="check-field">
                   <input
                     type="checkbox"
@@ -474,13 +552,20 @@ export default function CampaignApp({
               )}
               {!photo && (
                 <p className="upload-privacy-note">
-                  By choosing a photo, you agree to the <Link href="/privacy" target="_blank">privacy policy</Link>. Your photo stays on your device.
+                  By choosing a photo, you agree to the{" "}
+                  <Link href="/privacy" target="_blank">
+                    privacy policy
+                  </Link>
+                  . Your photo stays on your device.
                 </p>
               )}
               {photo && (
                 <>
                   {frames.length > 1 && (
-                    <div className="editor-frame-picker" aria-label="Choose a frame">
+                    <div
+                      className="editor-frame-picker"
+                      aria-label="Choose a frame"
+                    >
                       <span>Choose a frame</span>
                       <div>
                         {frames.map((frame) => (
@@ -494,49 +579,16 @@ export default function CampaignApp({
                               event("frame_selected", frame.id);
                             }}
                           >
-                            <img src={frame.thumbnail_url || frame.frame_url} alt="" />
+                            <img
+                              src={frame.thumbnail_url || frame.frame_url}
+                              alt=""
+                            />
                             {selected === frame.id && <Check size={15} />}
                           </button>
                         ))}
                       </div>
                     </div>
                   )}
-                  <div className="editor-bottom-controls" aria-label="Photo controls">
-                    <label>
-                      <Upload size={20} />
-                      <span>Photo</span>
-                      <input
-                        type="file"
-                        disabled={busy}
-                        accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
-                        onChange={(e) => {
-                          void choosePhoto(e.target.files?.[0]);
-                          e.target.value = "";
-                        }}
-                        aria-label="Change photo"
-                      />
-                    </label>
-                    <button
-                      type="button"
-                      aria-label="Rotate photo"
-                      onClick={() => setRotation((value) => (value + 90) % 360)}
-                    >
-                      <RotateCw size={20} />
-                      <span>Rotate</span>
-                    </button>
-                    <button
-                      type="button"
-                      aria-label="Reset photo position"
-                      onClick={() => {
-                        setCrop({ x: 0, y: 0 });
-                        setZoom(1);
-                        setRotation(0);
-                      }}
-                    >
-                      <RefreshCw size={20} />
-                      <span>Reset</span>
-                    </button>
-                  </div>
                   <button
                     className="button full editor-create-button"
                     disabled={busy || !area}
@@ -603,7 +655,10 @@ export default function CampaignApp({
                   </button>
                 )}
                 {c.enable_share && (
-                  <button className="button secondary" onClick={share}>
+                  <button
+                    className="button secondary"
+                    onClick={() => setShareOpen(true)}
+                  >
                     <Share2 size={16} /> Share
                   </button>
                 )}
@@ -684,7 +739,9 @@ export default function CampaignApp({
               {photo ? "Private preview" : active?.name}
             </span>
             <span>
-              {photo ? `${size} × ${size}` : `${frames.length} ${frames.length === 1 ? "frame" : "frames"}`}
+              {photo
+                ? `${size} × ${size}`
+                : `${frames.length} ${frames.length === 1 ? "frame" : "frames"}`}
             </span>
           </div>
         </div>
@@ -692,6 +749,86 @@ export default function CampaignApp({
       {toast && (
         <div className="toast" role="status">
           {toast}
+        </div>
+      )}
+      {shareOpen && result && (
+        <div
+          className="share-sheet-backdrop"
+          onMouseDown={(e) =>
+            e.target === e.currentTarget && setShareOpen(false)
+          }
+        >
+          <section
+            className="share-sheet"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="share-sheet-title"
+          >
+            <button
+              autoFocus
+              className="share-sheet-close"
+              aria-label="Close share options"
+              onClick={() => setShareOpen(false)}
+            >
+              <X size={22} />
+            </button>
+            <div className="share-sheet-preview">
+              <img src={result} alt="Your finished campaign frame" />
+            </div>
+            <div className="share-sheet-body">
+              <h2 id="share-sheet-title">Share your frame</h2>
+              <p>Invite friends to join this campaign.</p>
+              <button
+                className="button full share-image-button"
+                onClick={() => void share()}
+              >
+                <Share2 size={17} /> Share image
+              </button>
+              <div
+                className="share-social-row"
+                aria-label="Share campaign link"
+              >
+                <a
+                  aria-label="Share on Facebook"
+                  href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(publicShareUrl)}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={countShare}
+                >
+                  f
+                </a>
+                <a
+                  aria-label="Share on X"
+                  href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(c.share_text)}&url=${encodeURIComponent(publicShareUrl)}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={countShare}
+                >
+                  X
+                </a>
+                <a
+                  aria-label="Share on WhatsApp"
+                  href={`https://wa.me/?text=${encodeURIComponent(`${c.share_text}\n${publicShareUrl}`)}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={countShare}
+                >
+                  W
+                </a>
+              </div>
+              <div className="share-divider">
+                <span>or copy link</span>
+              </div>
+              <div className="share-copy-row">
+                <span>
+                  {publicShareUrl.replace(/^https?:\/\//, "") || sharePath}
+                </span>
+                <button type="button" onClick={() => void copyShareLink()}>
+                  Copy
+                </button>
+              </div>
+            </div>
+          </section>
         </div>
       )}
     </div>
